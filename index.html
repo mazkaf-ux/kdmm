@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Invoice - Koperasi Digdaya Mitra Mandiri</title>
+  <style>
+    :root {
+      --primary: #1b5e20;
+      --border: #333333;
+      --bg-panel: #f4f6f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: var(--bg-panel);
+      color: #111;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* PANEL INPUT (KIRI) */
+    .editor-panel {
+      width: 420px;
+      background: #ffffff;
+      border-right: 1px solid #dcdcdc;
+      padding: 20px;
+      overflow-y: auto;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .editor-panel h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #444;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #222;
+    }
+
+    .btn-danger {
+      background-color: #d32f2f;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .item-card {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .item-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    /* AREA PRATINJAU INVOICE (KANAN) */
+    .preview-area {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+    }
+
+    .invoice-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      padding: 15mm 18mm;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      position: relative;
+    }
+
+    /* KOP SURAT */
+    .kop-surat {
+      display: flex;
+      align-items: center;
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .kop-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      margin-right: 16px;
+    }
+
+    .kop-text {
+      flex: 1;
+      text-align: center;
+    }
+
+    .kop-text h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+    }
+
+    .kop-text p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* JUDUL & METADATA INVOICE */
+    .invoice-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 10px 0 16px;
+      letter-spacing: 1px;
+    }
+
+    .meta-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+
+    .meta-table td {
+      padding: 2px 6px 2px 0;
+      vertical-align: top;
+    }
+
+    .nota-box {
+      font-weight: bold;
+      font-size: 14px;
+      padding: 4px 10px;
+      border: 1px solid #000;
+    }
+
+    /* TABEL BARANG */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-bottom: 24px;
+    }
+
+    .items-table th,
+    .items-table td {
+      border: 1px solid #000;
+      padding: 6px 8px;
+    }
+
+    .items-table th {
+      background-color: #f2f2f2;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    .rp-cell {
+      border-right: none !important;
+      width: 28px;
+      text-align: left;
+    }
+
+    .val-cell {
+      border-left: none !important;
+      text-align: right;
+    }
+
+    .total-row td {
+      font-weight: bold;
+      background-color: #fafafa;
+      font-size: 13px;
+    }
+
+    /* TANDA TANGAN */
+    .signature-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding: 0 20px;
+      font-size: 13px;
+      page-break-inside: avoid;
+    }
+
+    .sig-box {
+      text-align: center;
+      width: 230px;
+      position: relative;
+    }
+
+    .sig-space {
+      height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .sig-img {
+      max-height: 70px;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    .sig-name {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    /* ATURAN CETAK / PRINT */
+    @media print {
+      body {
+        background: #fff;
+      }
+      .editor-panel {
+        display: none !important;
+      }
+      .preview-area {
+        padding: 0;
+        display: block;
+      }
+      .invoice-sheet {
+        box-shadow: none;
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANEL INPUT DATA -->
+  <div class="editor-panel">
+    <h2>Input Data Invoice</h2>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>Nomor Nota</label>
+        <input type="text" id="inNota" value="G203" oninput="render()" />
+      </div>
+      <div class="form-group">
+        <label>Tagihan Kepada</label>
+        <input type="text" id="inKepada" value="SPPG Gambasan" oninput="render()" />
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>Tanggal Invoice</label>
+        <input type="text" id="inTanggal" value="Minggu, 22 November 2026" oninput="render()" />
+      </div>
+      <div class="form-group">
+        <label>Menu</label>
+        <input type="text" id="inMenu" value="Senin, 23 November 2026" oninput="render()" />
+      </div>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 14px 0;">
+
+    <div class="form-group">
+      <label>Tempel Cepat dari Excel (Opsional)</label>
+      <textarea id="bulkInput" rows="3" placeholder="Paste 4 kolom dari Excel: Bahan Baku [Tab] Vol [Tab] Sat [Tab] Harga"></textarea>
+      <button type="button" class="btn btn-secondary" style="margin-top: 6px; width: 100%;" onclick="importFromExcel()">+ Masukkan Data Paste ke Tabel</button>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px;">
+      <strong style="font-size: 13px;">Daftar Bahan Baku</strong>
+      <button type="button" class="btn btn-secondary" onclick="addItem()">+ Tambah Baris</button>
+    </div>
+
+    <div id="itemsContainer"></div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 14px 0;">
+
+    <details style="font-size: 12px; margin-bottom: 12px;">
+      <summary style="cursor: pointer; font-weight: bold; color: #444;">Pengaturan Logo & Tanda Tangan (Tersimpan Otomatis)</summary>
+      <div style="margin-top: 10px;">
+        <div class="form-group">
+          <label>Logo Koperasi (PNG/JPG)</label>
+          <input type="file" accept="image/*" onchange="saveImage(event, 'logoKoperasi')" />
+        </div>
+        <div class="form-group">
+          <label>TTD Manager Keuangan</label>
+          <input type="file" accept="image/*" onchange="saveImage(event, 'ttdManager')" />
+        </div>
+        <div class="form-group">
+          <label>TTD + Stempel Direktur</label>
+          <input type="file" accept="image/*" onchange="saveImage(event, 'ttdDirektur')" />
+        </div>
+        <button type="button" class="btn btn-danger" onclick="clearImages()">Hapus Gambar Tersimpan</button>
+      </div>
+    </details>
+
+    <button type="button" class="btn btn-primary" onclick="window.print()">Cetak / Simpan PDF</button>
+  </div>
+
+  <!-- AREA PRATINJAU DOKUMEN -->
+  <div class="preview-area">
+    <div class="invoice-sheet">
+      <div class="kop-surat">
+        <img id="outLogo" class="kop-logo" src="" alt="Logo" style="display: none;" />
+        <div class="kop-text">
+          <h1>KOPERASI "DIGDAYA MITRA MANDIRI" PCNU TEMANGGUNG</h1>
+          <p>Gedung PCNU Lantai 2, Jln. Jenderal Sudirman, No. 60,<br>Temanggung, Jawa Tengah, 56218</p>
+        </div>
+      </div>
+
+      <div class="invoice-title">INVOICE</div>
+
+      <div class="meta-container">
+        <table class="meta-table">
+          <tr>
+            <td><strong>Tagihan Kepada</strong></td>
+            <td>: <span id="outKepada"></span></td>
+          </tr>
+          <tr>
+            <td><strong>Tanggal</strong></td>
+            <td>: <span id="outTanggal"></span></td>
+          </tr>
+          <tr>
+            <td><strong>Menu</strong></td>
+            <td>: <span id="outMenu"></span></td>
+          </tr>
+        </table>
+        <div class="nota-box">Nota No. <span id="outNota"></span></div>
+      </div>
+
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width: 36px;">No</th>
+            <th>Bahan Baku</th>
+            <th style="width: 55px;">Vol</th>
+            <th style="width: 55px;">Sat</th>
+            <th style="width: 95px;">Harga @</th>
+            <th colspan="2" style="width: 125px;">Jumlah Harga</th>
+          </tr>
+        </thead>
+        <tbody id="outTableBody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="5" class="text-right">TOTAL</td>
+            <td class="rp-cell">Rp</td>
+            <td class="val-cell" id="outGrandTotal">0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="signature-section">
+        <div class="sig-box">
+          <div>Manager Keuangan</div>
+          <div class="sig-space">
+            <img id="outTtdManager" class="sig-img" src="" alt="" style="display: none;" />
+          </div>
+          <div class="sig-name">Budi Raharjo, S.E.</div>
+        </div>
+
+        <div class="sig-box">
+          <div>Direktur</div>
+          <div class="sig-space">
+            <img id="outTtdDirektur" class="sig-img" src="" alt="" style="display: none;" />
+          </div>
+          <div class="sig-name">Ipnu Haryono, AAIJ, ICLFP.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let items = [
+      { nama: "Beras C4 Raja", vol: 71, sat: "kg", harga: 16500 },
+      { nama: "Bandeng besar 100g / ekor", vol: 644, sat: "pcs", harga: 6600 },
+      { nama: "Minyak sunco 2ltr", vol: 26, sat: "pcs", harga: 46000 }
+    ];
+
+    function formatAngka(num) {
+      return new Intl.NumberFormat("id-ID").format(Math.round(num || 0));
+    }
+
+    function renderEditor() {
+      const container = document.getElementById("itemsContainer");
+      container.innerHTML = "";
+      items.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div class="item-card-header">
+            <span>Item #${index + 1}</span>
+            <button type="button" class="btn btn-danger" onclick="removeItem(${index})">Hapus</button>
+          </div>
+          <input type="text" placeholder="Nama Bahan Baku" value="${item.nama}" oninput="updateItem(${index}, 'nama', this.value)" />
+          <div class="item-grid">
+            <input type="number" step="any" placeholder="Vol" value="${item.vol}" oninput="updateItem(${index}, 'vol', parseFloat(this.value))" />
+            <input type="text" placeholder="Sat" value="${item.sat}" oninput="updateItem(${index}, 'sat', this.value)" />
+            <input type="number" placeholder="Harga @" value="${item.harga}" oninput="updateItem(${index}, 'harga', parseFloat(this.value))" />
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function render() {
+      document.getElementById("outNota").textContent = document.getElementById("inNota").value;
+      document.getElementById("outKepada").textContent = document.getElementById("inKepada").value;
+      document.getElementById("outTanggal").textContent = document.getElementById("inTanggal").value;
+      document.getElementById("outMenu").textContent = document.getElementById("inMenu").value;
+
+      const tbody = document.getElementById("outTableBody");
+      tbody.innerHTML = "";
+      let grandTotal = 0;
+
+      items.forEach((item, idx) => {
+        const jumlah = (item.vol || 0) * (item.harga || 0);
+        grandTotal += jumlah;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="text-center">${idx + 1}</td>
+          <td>${item.nama}</td>
+          <td class="text-center">${item.vol || 0}</td>
+          <td class="text-center">${item.sat}</td>
+          <td class="text-right">${formatAngka(item.harga)}</td>
+          <td class="rp-cell">Rp</td>
+          <td class="val-cell">${formatAngka(jumlah)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("outGrandTotal").textContent = formatAngka(grandTotal);
+    }
+
+    function updateItem(index, field, value) {
+      items[index][field] = value;
+      render();
+    }
+
+    function addItem() {
+      items.push({ nama: "", vol: 1, sat: "kg", harga: 0 });
+      renderEditor();
+      render();
+    }
+
+    function removeItem(index) {
+      items.splice(index, 1);
+      renderEditor();
+      render();
+    }
+
+    function importFromExcel() {
+      const raw = document.getElementById("bulkInput").value.trim();
+      if (!raw) return;
+      const lines = raw.split("\n");
+      const parsed = [];
+
+      lines.forEach(line => {
+        const cols = line.split("\t");
+        if (cols.length >= 4) {
+          const nama = cols[0].trim();
+          const vol = parseFloat(cols[1].replace(",", ".")) || 0;
+          const sat = cols[2].trim();
+          const harga = parseFloat(cols[3].replace(/[^0-9]/g, "")) || 0;
+          parsed.push({ nama, vol, sat, harga });
+        }
+      });
+
+      if (parsed.length > 0) {
+        items = parsed;
+        document.getElementById("bulkInput").value = "";
+        renderEditor();
+        render();
+      } else {
+        alert("Format tidak terbaca. Pastikan Anda menyalin 4 kolom (Bahan Baku, Vol, Sat, Harga) langsung dari Excel/Spreadsheet.");
+      }
+    }
+
+    function saveImage(event, key) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        localStorage.setItem(key, e.target.result);
+        loadImages();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadImages() {
+      const map = {
+        logoKoperasi: "outLogo",
+        ttdManager: "outTtdManager",
+        ttdDirektur: "outTtdDirektur"
+      };
+      Object.keys(map).forEach(key => {
+        const data = localStorage.getItem(key);
+        const imgEl = document.getElementById(map[key]);
+        if (data) {
+          imgEl.src = data;
+          imgEl.style.display = "inline-block";
+        } else {
+          imgEl.style.display = "none";
+        }
+      });
+    }
+
+    function clearImages() {
+      ["logoKoperasi", "ttdManager", "ttdDirektur"].forEach(k => localStorage.removeItem(k));
+      loadImages();
+    }
+
+    loadImages();
+    renderEditor();
+    render();
+  </script>
+</body>
+</html>
