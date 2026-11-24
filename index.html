@@ -24,61 +24,123 @@
       min-height: 100vh;
     }
 
+    /* LAYAR KUNCI PIN */
+    .lock-overlay {
+      position: fixed;
+      inset: 0;
+      background: #1b5e20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .lock-card {
+      background: #ffffff;
+      padding: 28px 24px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .lock-card h3 {
+      margin: 0 0 6px;
+      color: #1b5e20;
+      font-size: 18px;
+    }
+
+    .lock-card p {
+      margin: 0 0 16px;
+      font-size: 12.5px;
+      color: #555;
+    }
+
+    .lock-card input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 3px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .lock-error {
+      color: #d32f2f;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+
     /* PANEL INPUT (KIRI) */
     .editor-panel {
-      width: 420px;
+      width: 410px;
+      flex-shrink: 0;
       background: #ffffff;
       border-right: 1px solid #dcdcdc;
-      padding: 20px;
+      padding: 18px;
       overflow-y: auto;
       height: 100vh;
       position: sticky;
       top: 0;
     }
 
-    .editor-panel h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: var(--primary);
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 2px solid var(--primary);
       padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .editor-header h2 {
+      margin: 0;
+      font-size: 17px;
+      color: var(--primary);
     }
 
     .form-group {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .form-group label {
       display: block;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: bold;
       margin-bottom: 4px;
       color: #444;
     }
 
     .form-group input,
-    .form-group textarea {
+    .form-group textarea,
+    .item-card input {
       width: 100%;
-      padding: 8px;
+      min-width: 0;
+      padding: 7px 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-family: inherit;
     }
 
     .row-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn {
       display: inline-block;
-      padding: 8px 12px;
+      padding: 7px 10px;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: bold;
     }
 
@@ -86,19 +148,27 @@
       background-color: var(--primary);
       color: #fff;
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       font-size: 14px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .btn-secondary {
-      background-color: #e0e0e0;
-      color: #222;
+      background-color: #e8ece9;
+      color: #1b5e20;
+      border: 1px solid #c8d6cc;
     }
 
     .btn-danger {
       background-color: #d32f2f;
       color: #fff;
+      padding: 3px 7px;
+      font-size: 11px;
+    }
+
+    .btn-lock {
+      background-color: #f0f0f0;
+      color: #444;
       padding: 4px 8px;
       font-size: 11px;
     }
@@ -106,7 +176,7 @@
     .item-card {
       background: #f9f9f9;
       border: 1px solid #e0e0e0;
-      padding: 10px;
+      padding: 9px;
       border-radius: 6px;
       margin-bottom: 8px;
     }
@@ -118,19 +188,27 @@
       margin-bottom: 6px;
       font-size: 12px;
       font-weight: bold;
+      color: #333;
     }
 
     .item-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1.2fr;
+      grid-template-columns: 0.9fr 0.8fr 1.3fr;
       gap: 6px;
       margin-top: 6px;
+    }
+
+    .field-mini label {
+      display: block;
+      font-size: 10px;
+      color: #666;
+      margin-bottom: 2px;
     }
 
     /* AREA PRATINJAU INVOICE (KANAN) */
     .preview-area {
       flex: 1;
-      padding: 30px;
+      padding: 28px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -290,7 +368,8 @@
       body {
         background: #fff;
       }
-      .editor-panel {
+      .editor-panel,
+      .lock-overlay {
         display: none !important;
       }
       .preview-area {
@@ -312,9 +391,23 @@
 </head>
 <body>
 
+  <!-- LAYAR KUNCI PIN -->
+  <div id="lockScreen" class="lock-overlay">
+    <div class="lock-card">
+      <h3>Akses Terbatas</h3>
+      <p>Koperasi Digdaya Mitra Mandiri<br>Masukkan PIN untuk membuka generator invoice.</p>
+      <input type="password" id="pinInput" placeholder="••••••" onkeydown="if(event.key==='Enter') unlockApp()" />
+      <button type="button" class="btn btn-primary" style="margin-top: 0;" onclick="unlockApp()">Buka Aplikasi</button>
+      <div id="lockError" class="lock-error">PIN salah. Silakan coba lagi.</div>
+    </div>
+  </div>
+
   <!-- PANEL INPUT DATA -->
   <div class="editor-panel">
-    <h2>Input Data Invoice</h2>
+    <div class="editor-header">
+      <h2>Input Data Invoice</h2>
+      <button type="button" class="btn btn-lock" onclick="lockApp()">Kunci</button>
+    </div>
 
     <div class="row-2">
       <div class="form-group">
@@ -338,25 +431,25 @@
       </div>
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 14px 0;">
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
 
     <div class="form-group">
-      <label>Tempel Cepat dari Excel (Opsional)</label>
-      <textarea id="bulkInput" rows="3" placeholder="Paste 4 kolom dari Excel: Bahan Baku [Tab] Vol [Tab] Sat [Tab] Harga"></textarea>
+      <label>Tempel Cepat dari PO Excel</label>
+      <textarea id="bulkInput" rows="3" placeholder="Blok 4 kolom di Excel (Bahan Baku, Vol, Sat, Harga) lalu Ctrl+V di sini..."></textarea>
       <button type="button" class="btn btn-secondary" style="margin-top: 6px; width: 100%;" onclick="importFromExcel()">+ Masukkan Data Paste ke Tabel</button>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px;">
-      <strong style="font-size: 13px;">Daftar Bahan Baku</strong>
+      <strong style="font-size: 12.5px;">Daftar Bahan Baku</strong>
       <button type="button" class="btn btn-secondary" onclick="addItem()">+ Tambah Baris</button>
     </div>
 
     <div id="itemsContainer"></div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 14px 0;">
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
 
-    <details style="font-size: 12px; margin-bottom: 12px;">
-      <summary style="cursor: pointer; font-weight: bold; color: #444;">Pengaturan Logo & Tanda Tangan (Tersimpan Otomatis)</summary>
+    <details style="font-size: 12px; margin-bottom: 10px;">
+      <summary style="cursor: pointer; font-weight: bold; color: #444;">Pengaturan Logo & Tanda Tangan</summary>
       <div style="margin-top: 10px;">
         <div class="form-group">
           <label>Logo Koperasi (PNG/JPG)</label>
@@ -450,6 +543,32 @@
   </div>
 
   <script>
+    // UBAH PIN DI BAWAH INI SESUAI KEINGINAN ANDA
+    const PIN_RAHASIA = "220403";
+
+    function checkLock() {
+      if (sessionStorage.getItem("kdmm_unlocked") === "true") {
+        document.getElementById("lockScreen").style.display = "none";
+      }
+    }
+
+    function unlockApp() {
+      const val = document.getElementById("pinInput").value;
+      if (val === PIN_RAHASIA) {
+        sessionStorage.setItem("kdmm_unlocked", "true");
+        document.getElementById("lockScreen").style.display = "none";
+        document.getElementById("lockError").style.display = "none";
+      } else {
+        document.getElementById("lockError").style.display = "block";
+      }
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem("kdmm_unlocked");
+      document.getElementById("pinInput").value = "";
+      document.getElementById("lockScreen").style.display = "flex";
+    }
+
     let items = [
       { nama: "Beras C4 Raja", vol: 71, sat: "kg", harga: 16500 },
       { nama: "Bandeng besar 100g / ekor", vol: 644, sat: "pcs", harga: 6600 },
@@ -473,9 +592,18 @@
           </div>
           <input type="text" placeholder="Nama Bahan Baku" value="${item.nama}" oninput="updateItem(${index}, 'nama', this.value)" />
           <div class="item-grid">
-            <input type="number" step="any" placeholder="Vol" value="${item.vol}" oninput="updateItem(${index}, 'vol', parseFloat(this.value))" />
-            <input type="text" placeholder="Sat" value="${item.sat}" oninput="updateItem(${index}, 'sat', this.value)" />
-            <input type="number" placeholder="Harga @" value="${item.harga}" oninput="updateItem(${index}, 'harga', parseFloat(this.value))" />
+            <div class="field-mini">
+              <label>Vol</label>
+              <input type="number" step="any" value="${item.vol}" oninput="updateItem(${index}, 'vol', parseFloat(this.value))" />
+            </div>
+            <div class="field-mini">
+              <label>Sat</label>
+              <input type="text" value="${item.sat}" oninput="updateItem(${index}, 'sat', this.value)" />
+            </div>
+            <div class="field-mini">
+              <label>Harga @</label>
+              <input type="number" value="${item.harga}" oninput="updateItem(${index}, 'harga', parseFloat(this.value))" />
+            </div>
           </div>
         `;
         container.appendChild(card);
@@ -552,7 +680,7 @@
         renderEditor();
         render();
       } else {
-        alert("Format tidak terbaca. Pastikan Anda menyalin 4 kolom (Bahan Baku, Vol, Sat, Harga) langsung dari Excel/Spreadsheet.");
+        alert("Format tidak terbaca. Pastikan Anda menyalin 4 kolom (Bahan Baku, Vol, Sat, Harga) langsung dari Excel.");
       }
     }
 
@@ -590,6 +718,7 @@
       loadImages();
     }
 
+    checkLock();
     loadImages();
     renderEditor();
     render();
