@@ -116,7 +116,8 @@
       color: #444;
     }
 
-    .form-group input,
+    .form-group input[type="text"],
+    .form-group input[type="file"],
     .form-group textarea,
     .item-card input {
       width: 100%;
@@ -126,6 +127,29 @@
       border-radius: 4px;
       font-size: 12.5px;
       font-family: inherit;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+      background: #f5f7f5;
+      padding: 5px 8px;
+      border-radius: 4px;
+      border: 1px solid #e0e5e0;
+    }
+
+    .slider-row span {
+      font-size: 11px;
+      color: #444;
+      white-space: nowrap;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      cursor: pointer;
+      accent-color: var(--primary);
     }
 
     .row-2 {
@@ -340,12 +364,12 @@
 
     .sig-box {
       text-align: center;
-      width: 230px;
+      width: 260px;
       position: relative;
     }
 
     .sig-space {
-      height: 75px;
+      height: 95px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -353,14 +377,19 @@
     }
 
     .sig-img {
-      max-height: 70px;
-      max-width: 180px;
+      height: 110px;
+      max-width: 270px;
+      width: auto;
       object-fit: contain;
+      mix-blend-mode: multiply;
+      pointer-events: none;
     }
 
     .sig-name {
       font-weight: bold;
       text-decoration: underline;
+      position: relative;
+      z-index: 2;
     }
 
     /* ATURAN CETAK / PRINT */
@@ -448,21 +477,34 @@
 
     <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
 
-    <details style="font-size: 12px; margin-bottom: 10px;">
+    <details open style="font-size: 12px; margin-bottom: 10px;">
       <summary style="cursor: pointer; font-weight: bold; color: #444;">Pengaturan Logo & Tanda Tangan</summary>
       <div style="margin-top: 10px;">
         <div class="form-group">
           <label>Logo Koperasi (PNG/JPG)</label>
           <input type="file" accept="image/*" onchange="saveImage(event, 'logoKoperasi')" />
         </div>
+
         <div class="form-group">
           <label>TTD Manager Keuangan</label>
           <input type="file" accept="image/*" onchange="saveImage(event, 'ttdManager')" />
+          <div class="slider-row">
+            <span>Ukuran:</span>
+            <input type="range" id="sizeManager" min="60" max="180" value="110" oninput="updateSigSize('manager', this.value)" />
+            <span id="valSizeManager">110px</span>
+          </div>
         </div>
+
         <div class="form-group">
           <label>TTD + Stempel Direktur</label>
           <input type="file" accept="image/*" onchange="saveImage(event, 'ttdDirektur')" />
+          <div class="slider-row">
+            <span>Ukuran:</span>
+            <input type="range" id="sizeDirektur" min="60" max="180" value="110" oninput="updateSigSize('direktur', this.value)" />
+            <span id="valSizeDirektur">110px</span>
+          </div>
         </div>
+
         <button type="button" class="btn btn-danger" onclick="clearImages()">Hapus Gambar Tersimpan</button>
       </div>
     </details>
@@ -575,6 +617,15 @@
       { nama: "Minyak sunco 2ltr", vol: 26, sat: "pcs", harga: 46000 }
     ];
 
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'");
+    }
+
     function formatAngka(num) {
       return new Intl.NumberFormat("id-ID").format(Math.round(num || 0));
     }
@@ -590,7 +641,7 @@
             <span>Item #${index + 1}</span>
             <button type="button" class="btn btn-danger" onclick="removeItem(${index})">Hapus</button>
           </div>
-          <input type="text" placeholder="Nama Bahan Baku" value="${item.nama}" oninput="updateItem(${index}, 'nama', this.value)" />
+          <input type="text" placeholder="Nama Bahan Baku" value="${escapeHtml(item.nama)}" oninput="updateItem(${index}, 'nama', this.value)" />
           <div class="item-grid">
             <div class="field-mini">
               <label>Vol</label>
@@ -598,7 +649,7 @@
             </div>
             <div class="field-mini">
               <label>Sat</label>
-              <input type="text" value="${item.sat}" oninput="updateItem(${index}, 'sat', this.value)" />
+              <input type="text" value="${escapeHtml(item.sat)}" oninput="updateItem(${index}, 'sat', this.value)" />
             </div>
             <div class="field-mini">
               <label>Harga @</label>
@@ -627,9 +678,9 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="text-center">${idx + 1}</td>
-          <td>${item.nama}</td>
+          <td>${escapeHtml(item.nama)}</td>
           <td class="text-center">${item.vol || 0}</td>
-          <td class="text-center">${item.sat}</td>
+          <td class="text-center">${escapeHtml(item.sat)}</td>
           <td class="text-right">${formatAngka(item.harga)}</td>
           <td class="rp-cell">Rp</td>
           <td class="val-cell">${formatAngka(jumlah)}</td>
@@ -657,10 +708,22 @@
       render();
     }
 
+    function parseHargaExcel(str) {
+      let clean = str.replace(/Rp/gi, "").trim();
+      if (clean.includes(",") && clean.includes(".")) {
+        clean = clean.replace(/\./g, "").replace(",", ".");
+      } else if (clean.includes(",")) {
+        clean = clean.replace(",", ".");
+      } else {
+        clean = clean.replace(/\./g, "");
+      }
+      return parseFloat(clean.replace(/[^0-9.]/g, "")) || 0;
+    }
+
     function importFromExcel() {
       const raw = document.getElementById("bulkInput").value.trim();
       if (!raw) return;
-      const lines = raw.split("\n");
+      const lines = raw.split(/\r?\n/);
       const parsed = [];
 
       lines.forEach(line => {
@@ -669,8 +732,10 @@
           const nama = cols[0].trim();
           const vol = parseFloat(cols[1].replace(",", ".")) || 0;
           const sat = cols[2].trim();
-          const harga = parseFloat(cols[3].replace(/[^0-9]/g, "")) || 0;
-          parsed.push({ nama, vol, sat, harga });
+          const harga = parseHargaExcel(cols[3]);
+          if (nama) {
+            parsed.push({ nama, vol, sat, harga });
+          }
         }
       });
 
@@ -684,13 +749,40 @@
       }
     }
 
+    function updateSigSize(role, val) {
+      if (role === "manager") {
+        document.getElementById("outTtdManager").style.height = val + "px";
+        document.getElementById("valSizeManager").textContent = val + "px";
+        localStorage.setItem("sizeTtdManager", val);
+      } else if (role === "direktur") {
+        document.getElementById("outTtdDirektur").style.height = val + "px";
+        document.getElementById("valSizeDirektur").textContent = val + "px";
+        localStorage.setItem("sizeTtdDirektur", val);
+      }
+    }
+
+    function loadSigSizes() {
+      const savedManager = localStorage.getItem("sizeTtdManager") || "110";
+      const savedDirektur = localStorage.getItem("sizeTtdDirektur") || "110";
+
+      document.getElementById("sizeManager").value = savedManager;
+      updateSigSize("manager", savedManager);
+
+      document.getElementById("sizeDirektur").value = savedDirektur;
+      updateSigSize("direktur", savedDirektur);
+    }
+
     function saveImage(event, key) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function (e) {
-        localStorage.setItem(key, e.target.result);
-        loadImages();
+        try {
+          localStorage.setItem(key, e.target.result);
+          loadImages();
+        } catch (err) {
+          alert("Ukuran file gambar terlalu besar untuk disimpan di browser. Silakan kompres ukuran gambar terlebih dahulu (maksimal sekitar 1 MB).");
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -720,6 +812,7 @@
 
     checkLock();
     loadImages();
+    loadSigSizes();
     renderEditor();
     render();
   </script>
