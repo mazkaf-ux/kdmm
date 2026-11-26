@@ -369,7 +369,7 @@
     }
 
     .sig-space {
-      height: 95px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -377,8 +377,8 @@
     }
 
     .sig-img {
-      height: 110px;
-      max-width: 270px;
+      height: 120px;
+      max-width: none;
       width: auto;
       object-fit: contain;
       mix-blend-mode: multiply;
@@ -490,8 +490,8 @@
           <input type="file" accept="image/*" onchange="saveImage(event, 'ttdManager')" />
           <div class="slider-row">
             <span>Ukuran:</span>
-            <input type="range" id="sizeManager" min="60" max="180" value="110" oninput="updateSigSize('manager', this.value)" />
-            <span id="valSizeManager">110px</span>
+            <input type="range" id="sizeManager" min="60" max="260" value="120" oninput="updateSigSize('manager', this.value)" />
+            <span id="valSizeManager">120px</span>
           </div>
         </div>
 
@@ -500,8 +500,8 @@
           <input type="file" accept="image/*" onchange="saveImage(event, 'ttdDirektur')" />
           <div class="slider-row">
             <span>Ukuran:</span>
-            <input type="range" id="sizeDirektur" min="60" max="180" value="110" oninput="updateSigSize('direktur', this.value)" />
-            <span id="valSizeDirektur">110px</span>
+            <input type="range" id="sizeDirektur" min="60" max="260" value="120" oninput="updateSigSize('direktur', this.value)" />
+            <span id="valSizeDirektur">120px</span>
           </div>
         </div>
 
@@ -585,7 +585,6 @@
   </div>
 
   <script>
-    // UBAH PIN DI BAWAH INI SESUAI KEINGINAN ANDA
     const PIN_RAHASIA = "220403";
 
     function checkLock() {
@@ -762,8 +761,8 @@
     }
 
     function loadSigSizes() {
-      const savedManager = localStorage.getItem("sizeTtdManager") || "110";
-      const savedDirektur = localStorage.getItem("sizeTtdDirektur") || "110";
+      const savedManager = localStorage.getItem("sizeTtdManager") || "120";
+      const savedDirektur = localStorage.getItem("sizeTtdDirektur") || "120";
 
       document.getElementById("sizeManager").value = savedManager;
       updateSigSize("manager", savedManager);
